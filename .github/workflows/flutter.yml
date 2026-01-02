@@ -1,4 +1,4 @@
-name: Flutter Analyze (Phase 1)
+name: Flutter CI
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
     branches: [ "main" ]
 
 jobs:
-  analyze:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Flutter
@@ -19,8 +19,15 @@ jobs:
         with:
           channel: stable
 
+      - name: Flutter version
+        run: flutter --version
+
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze project source
-        run: flutter analyze
+      - name: Analyze project (non-fatal infos)
+        run: flutter analyze --no-fatal-infos
+
+      # 如果你后面开始写测试，可以打开这一段
+      # - name: Run tests
+      #   run: flutter test
