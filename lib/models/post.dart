@@ -6,6 +6,8 @@ class Post {
   final String body;
   final String author;
   final DateTime createdAt;
+  final bool isRemote;
+  final String? source;
 
   const Post({
     required this.id,
@@ -13,6 +15,8 @@ class Post {
     required this.body,
     required this.author,
     required this.createdAt,
+    this.isRemote = false,
+    this.source,
   });
 
   factory Post.fromFirestore(DocumentSnapshot doc) {
@@ -23,6 +27,19 @@ class Post {
       body: data['body'] as String? ?? '',
       author: data['author'] as String? ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      isRemote: data['isRemote'] as bool? ?? false,
+      source: data['source'] as String?,
     );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'title': title,
+      'body': body,
+      'author': author,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'isRemote': isRemote,
+      'source': source,
+    };
   }
 }

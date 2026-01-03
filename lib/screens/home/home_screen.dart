@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/posts_provider.dart';
+import '../create_post_screen.dart';
 import 'feed_view.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -14,6 +15,15 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Nebula'),
         centerTitle: true,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreatePostScreen()),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
       body: postsAsync.when(
         data: (posts) => FeedView(posts: posts),
