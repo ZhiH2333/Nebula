@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 头像：所有人可读，仅本人可上传/修改（路径：avatars/{uid}.jpg）
+    match /avatars/{userId}.jpg {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
