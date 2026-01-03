@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../models/post.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../screens/create_post_screen.dart';
 
 class PostCard extends ConsumerWidget {
   final Post post;
@@ -83,13 +85,45 @@ class PostCard extends ConsumerWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
-              'By ${post.author} • ${post.createdAt.toString().split(' ').first}',
+              'By ${post.actorHandle ?? post.author} • ${post.createdAt.toString().split(' ').first}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
-            Text(post.body),
+            // 使用 markdown 渲染正文
+            MarkdownBody(
+              data: post.body,
+              selectable: true,
+              onTapLink: (text, href, title) async {
+                // 默认 behavior: 打开外部链接（可在这里扩展）
+                if (href != null) {
+                  // 使用 url_launcher 或者自定义处理（这里仅打印）
+                  // TODO: add url_launcher when needed
+                  debugPrint('Open link: $href');
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (isOwner && !post.isRemote)
+                  TextButton.icon(
+                    onPressed: () {
+                      // 跳转到编辑页面（仅本地帖子）
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (ctx) => CreatePostScreen(editPost: post),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('编辑'),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
