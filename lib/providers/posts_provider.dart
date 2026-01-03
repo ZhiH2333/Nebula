@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/post.dart';
 
 final postsProvider = FutureProvider<List<Post>>((ref) async {
-  final snapshot = await FirebaseFirestore.instance.collection('posts').get();
+  final snapshot = await FirebaseFirestore.instance
+      .collection('posts')
+      .orderBy('createdAt', descending: true)
+      .get();
   return snapshot.docs.map((doc) => Post.fromFirestore(doc)).toList();
 });
