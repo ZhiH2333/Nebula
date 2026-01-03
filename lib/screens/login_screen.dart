@@ -18,14 +18,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   // 控制器
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController();
   final _displayNameController = TextEditingController();
+
+  // UsernameController 已移除，因为 Auth UID 自动生成
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _usernameController.dispose();
     _displayNameController.dispose();
     super.dispose();
   }
@@ -40,15 +40,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       if (_isLogin) {
-        await authService.login(
-          _emailController.text.trim(),
-          _passwordController.text.trim(),
-        );
-      } else {
-        await authService.register(
+        await authService.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
-          username: _usernameController.text.trim(),
+        );
+      } else {
+        await authService.signUpWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
           displayName: _displayNameController.text.trim(),
         );
       }
@@ -98,12 +97,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 if (!_isLogin) ...[
                   const SizedBox(height: 16),
                   TextFormField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(labelText: '用户名 (唯一ID)'),
-                    validator: (value) => value!.isNotEmpty ? null : '请输入用户名',
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
                     controller: _displayNameController,
                     decoration: const InputDecoration(labelText: '显示昵称'),
                     validator: (value) => value!.isNotEmpty ? null : '请输入昵称',
@@ -118,7 +111,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16)),
                   child: _isLoading
-                      ? const CircularProgressIndicator()
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : Text(_isLogin ? '登录' : '注册账号'),
                 ),
 

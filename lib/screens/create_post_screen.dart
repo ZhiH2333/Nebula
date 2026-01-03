@@ -1,14 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
 
-class CreatePostScreen extends StatefulWidget {
+class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
 
   @override
-  State<CreatePostScreen> createState() => _CreatePostScreenState();
+  ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // 文本控制器
   final _titleController = TextEditingController();
   final _bodyController = TextEditingController();
@@ -26,18 +28,57 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       return;
     }
 
+    // 获取当前用户
+    var user = ref.read(firebaseAuthProvider).currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请先登录')),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
+      // 获取用户昵称逻辑：
+      // 1. 优先使用 Auth 中的 displayName
+      // 2. 如果为空，尝试 reload 后再次获取
+      // 3. 仍然为空，从 Firestore users 集合获取
+      String authorName = user.displayName ?? '';
+
+      if (authorName.isEmpty) {
+        try {
+          await user.reload(); // 尝试刷新
+          user = ref.read(firebaseAuthProvider).currentUser; // 重新获取实例
+          authorName = user?.displayName ?? '';
+        } catch (e) {
+          // 忽略 reload 失败（如 PigeonUserInfo 类型错误），直接降级到 Firestore 获取
+          debugPrint('User reload failed: $e');
+        }
+      }
+
+      if (authorName.isEmpty && user != null) {
+        // Fallback: 从 Firestore 读取
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        if (userDoc.exists) {
+          authorName = userDoc.data()?['displayName'] ?? 'Unknown';
+        } else {
+          authorName = 'Unknown';
+        }
+      }
+
       // 写入 Firestore
-      // 对应 Phase 5 需求：isRemote: false, source: 'nebula-local'
       await FirebaseFirestore.instance.collection('posts').add({
         'title': _titleController.text.trim(),
         'body': _bodyController.text.trim(),
-        'author': 'Me', // 暂时硬编码，后续对接 Auth
-        'createdAt': FieldValue.serverTimestamp(), // 服务端时间戳
+        'author': authorName,
+        'authorId': user!.uid,
+        'createdAt': FieldValue.serverTimestamp(),
         'isRemote': false,
         'source': 'local',
       });

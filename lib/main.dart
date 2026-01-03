@@ -7,6 +7,7 @@ import 'screens/home/home_screen.dart';
 
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'providers/auth_provider.dart'; // Keeping original structure, just addressing the requested change lines
 
 // ... (other imports are fine, I will target the specific block)
@@ -17,6 +18,11 @@ void main() async {
   // 初始化 Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // 启用离线持久化
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
   runApp(

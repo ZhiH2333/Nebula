@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 基础函数：检查用户是否已登录
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // 基础函数：检查用户 UID 是否匹配文档 ID (用于 User Profile)
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // 基础函数：检查资源作者是否通过 authorId 匹配
+    function isResourceOwner() {
+      // 只有当文档存在 authorId 字段且等于当前用户 UID 时才算 owner
+      return resource.data.authorId == request.auth.uid;
+    }
+
+    // ============================================
+    // Collection: users
+    // 文档 ID 必须等于用户 UID
+    // ============================================
+    match /users/{userId} {
+      // Public Read: 允许任何人读取用户信息 (为了显示头像/昵称)
+      // 如果需要隐私保护，可以改为 isAuthenticated()
+      allow read: if true;
+
+      // Write: 只有用户自己可以修改自己的资料
+      // create: 注册时允许创建自己的文档
+      // update: 登录后允许更新
+      // delete: 暂时不允许删除账号 (需要更复杂的逻辑)
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // ============================================
+    // Collection: posts
+    // ============================================
+    match /posts/{postId} {
+      // Public Read: 所有人可见
+      allow read: if true;
+
+      // Create: 只有登录用户可以发帖
+      // 必须验证新数据的 authorId 是否等于当前用户，防止冒充
+      allow create: if isAuthenticated() 
+                    && request.resource.data.authorId == request.auth.uid;
+
+      // Update/Delete: 只有帖子作者可以修改或删除
+      allow update, delete: if isAuthenticated() && isResourceOwner();
+    }
+  }
+}
