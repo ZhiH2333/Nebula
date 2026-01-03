@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'providers/auth_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,19 +47,8 @@ class AuthWrapper extends ConsumerWidget {
     return authState.when(
       data: (user) {
         if (user != null) {
-          // 已登录: 显示主页 (暂用 Placeholder 代替)
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Nebula 主页'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.exit_to_app),
-                  onPressed: () => ref.read(authServiceProvider).logout(),
-                ),
-              ],
-            ),
-            body: const Center(child: Text('欢迎来到 Nebula (UI 开发中)')),
-          );
+          // 已登录: 显示主页
+          return const HomeScreen();
         }
         // 未登录: 显示登录页
         return const LoginScreen();
