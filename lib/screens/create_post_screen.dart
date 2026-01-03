@@ -89,7 +89,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         'body': _bodyController.text.trim(),
         'author': authorName,
         'authorId': user!.uid,
-        'actorHandle': _selectedActor?.handle ?? '${user.uid.substring(0,6)}@nebula.local',
+        'actorHandle': _selectedActor?.handle ??
+            '${user.uid.substring(0, 6)}@nebula.local',
         'createdAt': FieldValue.serverTimestamp(),
         'isRemote': false,
         'source': 'local',
@@ -175,12 +176,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 final data = snap.data?.data();
                 final raw = (data?['actors'] as List<dynamic>?) ?? [];
                 _actors = raw
-                    .map((e) => Actor.fromMap(Map<String, dynamic>.from(e as Map)))
+                    .map((e) =>
+                        Actor.fromMap(Map<String, dynamic>.from(e as Map)))
                     .toList();
 
                 // 如果没有 actors，则使用临时回退显示并在后台触发初始化
                 if (_actors.isEmpty) {
-                  final fallbackHandle = (data?['displayName'] as String?) ?? (data?['username'] as String?) ?? 'me';
+                  final fallbackHandle = (data?['displayName'] as String?) ??
+                      (data?['username'] as String?) ??
+                      'me';
                   final fallback = Actor(
                       handle: '$fallbackHandle@nebula.local',
                       displayName: fallbackHandle,
@@ -216,9 +220,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                           return Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: ChoiceChip(
-                              label: Text(a.displayName, style: TextStyle(color: selected ? Colors.white : Colors.black)),
+                              label: Text(a.displayName,
+                                  style: TextStyle(
+                                      color: selected
+                                          ? Colors.white
+                                          : Colors.black)),
                               selected: selected,
-                              onSelected: (_) => setState(() => _selectedActor = a),
+                              onSelected: (_) =>
+                                  setState(() => _selectedActor = a),
                               selectedColor: Colors.black,
                               backgroundColor: Colors.white,
                               side: const BorderSide(color: Colors.black12),
@@ -281,7 +290,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2, color: Colors.white))
                               : const Icon(Icons.send),
-                          label: Text(_isLoading ? '发送中...' : (widget.editPost != null ? '保存' : '发布')),
+                          label: Text(_isLoading
+                              ? '发送中...'
+                              : (widget.editPost != null ? '保存' : '发布')),
                         ),
                       ),
                     ],

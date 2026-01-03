@@ -139,11 +139,14 @@ class _AuthWrapperState extends ConsumerState<AuthWrapper> {
             Future.microtask(() async {
               try {
                 final displayName = user.displayName ?? '';
-                final username = (user.email != null && user.email!.contains('@'))
-                    ? user.email!.split('@').first
-                    : user.uid;
+                final username =
+                    (user.email != null && user.email!.contains('@'))
+                        ? user.email!.split('@').first
+                        : user.uid;
                 await ActorService.ensureDefaultActorsForUser(
-                    uid: user.uid, displayName: displayName, username: username);
+                    uid: user.uid,
+                    displayName: displayName,
+                    username: username);
               } catch (e) {
                 // 忽略初始化错误，确保不影响主流程
               }

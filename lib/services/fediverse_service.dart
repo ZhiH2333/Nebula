@@ -17,7 +17,8 @@ class FediverseService {
 
     // 1) 尝试 Mastodon accounts lookup
     try {
-      final url = Uri.https(instance, '/api/v1/accounts/lookup', {'acct': acct});
+      final url =
+          Uri.https(instance, '/api/v1/accounts/lookup', {'acct': acct});
       final resp = await _dio.get(url.toString());
       if (resp.statusCode == 200) {
         final data = resp.data as Map<String, dynamic>;
@@ -36,7 +37,8 @@ class FediverseService {
 
     // 2) 尝试 WebFinger (.well-known/webfinger)
     try {
-      final url = Uri.https(instance, '/.well-known/webfinger', {'resource': 'acct:$acct'});
+      final url = Uri.https(
+          instance, '/.well-known/webfinger', {'resource': 'acct:$acct'});
       final resp = await _dio.get(url.toString());
       if (resp.statusCode == 200) {
         final data = resp.data as Map<String, dynamic>;
@@ -44,7 +46,9 @@ class FediverseService {
         String? actor;
         if (data['links'] is List) {
           for (final l in (data['links'] as List)) {
-            if (l is Map && l['rel'] == 'self' && l['type'] == 'application/activity+json') {
+            if (l is Map &&
+                l['rel'] == 'self' &&
+                l['type'] == 'application/activity+json') {
               actor = l['href'];
               break;
             }
@@ -66,25 +70,31 @@ class FediverseService {
   }
 
   /// 对于 Mastodon 类型，尝试抓取账号的 statuses；对于 webfinger，尝试从 actor.outbox 抓取
-  static Future<List<Post>> fetchAccountStatuses(Map<String, dynamic> accountInfo) async {
+  static Future<List<Post>> fetchAccountStatuses(
+      Map<String, dynamic> accountInfo) async {
     final type = accountInfo['type'];
     if (type == 'mastodon') {
       final instance = accountInfo['instance'];
       final id = accountInfo['id'];
       if (instance == null || id == null) return [];
-      final url = Uri.https(instance, '/api/v1/accounts/$id/statuses', {'limit': '40'});
+      final url =
+          Uri.https(instance, '/api/v1/accounts/$id/statuses', {'limit': '40'});
       final resp = await _dio.get(url.toString());
       if (resp.statusCode == 200 && resp.data is List) {
         final List items = resp.data as List;
         return items.map((it) {
           final Map<String, dynamic> m = it as Map<String, dynamic>;
           return Post(
-            id: m['id']?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
-            title: (m['content'] is String) ? _extractTitle(m['content'] as String) : '',
+            id: m['id']?.toString() ??
+                DateTime.now().microsecondsSinceEpoch.toString(),
+            title: (m['content'] is String)
+                ? _extractTitle(m['content'] as String)
+                : '',
             body: _stripHtml(m['content'] as String? ?? ''),
             author: accountInfo['display_name'] ?? accountInfo['acct'] ?? '',
             authorId: accountInfo['acct'] ?? '',
-            createdAt: DateTime.tryParse(m['created_at'] ?? '') ?? DateTime.now(),
+            createdAt:
+                DateTime.tryParse(m['created_at'] ?? '') ?? DateTime.now(),
             isRemote: true,
             source: 'mastodon:${instance}',
           );
@@ -95,26 +105,35 @@ class FediverseService {
       final actor = accountInfo['actor'];
       if (actor == null) return [];
       try {
-        final resp = await _dio.get(actor, options: Options(headers: {'Accept': 'application/activity+json'}));
+        final resp = await _dio.get(actor,
+            options: Options(headers: {'Accept': 'application/activity+json'}));
         if (resp.statusCode == 200) {
           final actorJson = resp.data as Map<String, dynamic>;
           final outbox = actorJson['outbox'];
           if (outbox != null) {
-            final outResp = await _dio.get(outbox, options: Options(headers: {'Accept': 'application/activity+json'}));
+            final outResp = await _dio.get(outbox,
+                options:
+                    Options(headers: {'Accept': 'application/activity+json'}));
             if (outResp.statusCode == 200) {
               final feed = outResp.data as Map<String, dynamic>;
               final items = feed['orderedItems'] ?? feed['items'] ?? [];
               if (items is List) {
                 return items.map((it) {
                   final m = it as Map<String, dynamic>;
-                  final content = m['content'] is String ? m['content'] as String : jsonEncode(m['object'] ?? '');
+                  final content = m['content'] is String
+                      ? m['content'] as String
+                      : jsonEncode(m['object'] ?? '');
                   return Post(
-                    id: m['id']?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+                    id: m['id']?.toString() ??
+                        DateTime.now().microsecondsSinceEpoch.toString(),
                     title: _extractTitle(content),
                     body: _stripHtml(content),
-                    author: actorJson['preferredUsername'] ?? accountInfo['acct'] ?? '',
+                    author: actorJson['preferredUsername'] ??
+                        accountInfo['acct'] ??
+                        '',
                     authorId: actorJson['id'] ?? '',
-                    createdAt: DateTime.tryParse(m['published'] ?? '') ?? DateTime.now(),
+                    createdAt: DateTime.tryParse(m['published'] ?? '') ??
+                        DateTime.now(),
                     isRemote: true,
                     source: actor,
                   );

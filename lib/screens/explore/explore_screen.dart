@@ -80,7 +80,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
             Expanded(
               child: ListView.builder(
                 itemCount: _results.length,
-                itemBuilder: (context, index) => PostCard(post: _results[index]),
+                itemBuilder: (context, index) =>
+                    PostCard(post: _results[index]),
               ),
             ),
           ],

@@ -17,7 +17,8 @@ class ActorService {
       final docSnap = await docRef.get();
 
       Map<String, dynamic>? data = docSnap.data();
-      final rawActors = (data?['actors'] as List<dynamic>?)?.cast<Map<String, dynamic>>();
+      final rawActors =
+          (data?['actors'] as List<dynamic>?)?.cast<Map<String, dynamic>>();
 
       if (rawActors != null && rawActors.isNotEmpty) {
         // convert and return
