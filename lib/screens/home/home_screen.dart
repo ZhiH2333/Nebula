@@ -20,9 +20,19 @@ class HomeScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(),
         ),
-        error: (error, stack) => const Center(
-          child: Text('Error loading feed'),
-        ),
+        error: (error, stack) {
+          debugPrint('Feed Error: $error');
+          debugPrint('Stack: $stack');
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SelectableText(
+                'Error loading feed:\n$error',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
