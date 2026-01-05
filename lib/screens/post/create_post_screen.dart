@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/post_service_provider.dart';
 import '../../providers/auth_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -21,10 +22,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     super.dispose();
   }
 
-  Future<void> _publish() async {
-    final user = ref.read(firebaseUserProvider);
-    if (user == null) return;
-
+  Future<void> _publish(User user) async {
     final postService = ref.read(postServiceProvider);
 
     await postService.createPost(
@@ -40,7 +38,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(firebaseUserProvider);
+    final userAsync = ref.watch(firebaseUserProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -74,7 +72,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: user == null ? null : () => _publish(),
+                onPressed: userAsync.when(
+                  data: (user) => user == null ? null : () => _publish(user),
+                  loading: () => null,
+                  error: (_, __) => null,
+                ),
                 child: const Text('Publish'),
               ),
             ),

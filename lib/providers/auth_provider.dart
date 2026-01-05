@@ -4,14 +4,14 @@ import '../services/fake_auth_service.dart';
 import '../models/user.dart';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🔐 [Phase 5.0] Firebase Auth 当前用户 (只读)
+// 🔐 Phase 6.1
+// Firebase 当前登录用户（监听状态变化）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-/// 直接暴露 FirebaseAuth.instance.currentUser
-/// - 返回值可能为 null（未登录或初始化中）
-/// - 不涉及任何业务逻辑，仅供后续功能使用
-/// - 当前 UI 不依赖此 Provider
-final firebaseUserProvider = Provider<User?>((ref) {
-  return FirebaseAuth.instance.currentUser;
+/// Firebase 当前登录用户（监听状态变化）
+/// - 返回一个 `Stream<User?>`，当登录状态变化时自动更新
+/// - 仅作状态监听，不包含额外业务逻辑
+final firebaseUserProvider = StreamProvider<User?>((ref) {
+  return FirebaseAuth.instance.authStateChanges();
 });
 
 // [LOCAL MODE] 使用 FakeAuthService 替代真实的 AuthService
