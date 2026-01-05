@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user.dart';
@@ -64,7 +65,7 @@ class AuthService {
 
       return newUser;
     } catch (e) {
-      print('注册失败: $e');
+      debugPrint('[AuthService] 注册失败: $e');
       rethrow;
     }
   }
@@ -89,7 +90,7 @@ class AuthService {
 
       return AppUser.fromFirestore(doc.data()!, doc.id);
     } catch (e) {
-      print('登录失败: $e');
+      debugPrint('[AuthService] 登录失败: $e');
       rethrow;
     }
   }
@@ -106,7 +107,7 @@ class AuthService {
       if (!doc.exists) return null;
       return AppUser.fromFirestore(doc.data()!, doc.id);
     } catch (e) {
-      print('获取用户失败: $e');
+      debugPrint('[AuthService] 获取用户失败: $e');
       return null;
     }
   }
